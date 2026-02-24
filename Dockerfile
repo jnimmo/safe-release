@@ -15,7 +15,9 @@ COPY app/ ./app/
 
 RUN useradd -m -u 1001 analyst \
     && mkdir /data \
-    && chown analyst /data
+    && chown analyst /data \
+    && mkdir -p /tmp/safe-release \
+    && chown analyst /tmp/safe-release
 
 ENV DATABASE_URL=sqlite:////data/safe_release.db
 
