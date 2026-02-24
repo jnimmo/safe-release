@@ -1,0 +1,43 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////data/safe_release.db
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - CLEAN_JOB_TTL_HOURS=1
+      - MAX_OUTPUT_MB=500
+    volumes:
+      - db_data:/data
+      - temp_data:/tmp/safe-release
+    depends_on:
+      clamav:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  clamav:
+    image: clamav/clamav:stable
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s  # freshclam runs on startup
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+volumes:
+  db_data:
+  temp_data:
+  clamav_data:
