@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>safe-release</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
+  <style>
+    .status-queued { background-color: #6c757d; }
+    .status-scanning, .status-scanning_decrypted { background-color: #0d6efd; }
+    .status-awaiting_password { background-color: #fd7e14; }
+    .status-clean { background-color: #198754; }
+    .status-infected { background-color: #dc3545; }
+    .status-failed { background-color: #dc3545; }
+  </style>
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+      <span class="navbar-brand fw-bold">safe-release</span>
+      <div
+        id="clamav-status"
+        hx-get="/partials/clamav-status"
+        hx-trigger="load, every 60s"
+        hx-swap="innerHTML">
+        <span class="text-secondary small">Loading ClamAV status…</span>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

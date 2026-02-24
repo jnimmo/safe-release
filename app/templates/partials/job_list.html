@@ -1,0 +1,12 @@
+<div id="job-list"
+  hx-get="/partials/jobs"
+  hx-trigger="every 3s"
+  hx-swap="outerHTML">
+  {% if jobs %}
+    {% for job in jobs %}
+      {% include "partials/job_card.html" %}
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No jobs queued yet.</p>
+  {% endif %}
+</div>
