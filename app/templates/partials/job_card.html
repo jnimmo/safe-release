@@ -1,0 +1,93 @@
+<div class="card mb-3" id="job-{{ job.id }}">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <span class="badge text-white status-{{ job.status }} me-2">{{ job.status.replace('_', ' ') }}</span>
+      <strong>{{ job.eml_filename }}</strong>
+      {% if job.ticket_ref %}
+        <span class="ms-2 text-muted small">{{ job.ticket_ref }}</span>
+      {% endif %}
+    </div>
+    <small class="text-muted">{{ job.created_at.strftime('%H:%M:%S') }}</small>
+  </div>
+  <div class="card-body">
+    {% if job.subject %}
+      <p class="mb-1"><strong>Subject:</strong> {{ job.subject }}</p>
+    {% endif %}
+    {% if job.from_address %}
+      <p class="mb-1"><strong>From:</strong> {{ job.from_address }}</p>
+    {% endif %}
+    {% if job.message_id %}
+      <p class="mb-1 text-muted small"><strong>Message-ID:</strong> {{ job.message_id }}</p>
+    {% endif %}
+
+    {% if job.clamav_signature_date %}
+      <p class="mb-2 text-muted small">Scanned with signatures: {{ job.clamav_signature_date }}</p>
+    {% endif %}
+
+    {% if job.attachments %}
+      <ul class="list-unstyled mt-2">
+        {% for att in job.attachments %}
+          <li class="mb-1">
+            📎 {{ att.filename }}
+            {% if att.get('original_scan') %}
+              <span class="badge {{ 'bg-success' if att.original_scan.clean else 'bg-warning text-dark' }} ms-1">
+                {% if att.original_scan.get('is_pua_encrypted') %}encrypted (expected)
+                {% elif att.original_scan.clean %}clean
+                {% else %}{{ att.original_scan.detail }}
+                {% endif %}
+              </span>
+            {% endif %}
+            {% if att.get('decrypted_scan') %}
+              → <span class="badge {{ 'bg-success' if att.decrypted_scan.clean else 'bg-danger' }}">
+                {{ 'clean' if att.decrypted_scan.clean else att.decrypted_scan.detail }}
+              </span>
+            {% endif %}
+            {% if job.status == 'clean' %}
+              <a href="/jobs/{{ job.id }}/files/{{ att.filename }}"
+                 class="btn btn-sm btn-outline-success ms-2">Download</a>
+              {% if att.filename.lower().endswith('.pdf') %}
+                <button class="btn btn-sm btn-outline-secondary ms-1"
+                  onclick="togglePdf('pdf-{{ job.id }}-{{ loop.index }}', '/jobs/{{ job.id }}/files/{{ att.filename }}')">
+                  Preview
+                </button>
+                <div id="pdf-{{ job.id }}-{{ loop.index }}" class="mt-2" style="display:none;">
+                  <iframe style="width:100%;height:600px;border:1px solid #dee2e6;border-radius:4px;"></iframe>
+                </div>
+              {% endif %}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if job.status == 'awaiting_password' %}
+      <form hx-post="/jobs/{{ job.id }}/retry"
+            hx-target="#job-list"
+            hx-swap="outerHTML"
+            class="mt-2 d-flex gap-2 align-items-end">
+        <div class="flex-grow-1">
+          <label class="form-label mb-1 small text-warning">Wrong password — try again:</label>
+          <input type="password" name="password" class="form-control form-control-sm" required placeholder="New password">
+        </div>
+        <button type="submit" class="btn btn-sm btn-warning">Retry</button>
+      </form>
+    {% endif %}
+
+    {% if job.error_detail and job.status == 'failed' %}
+      <div class="alert alert-danger mt-2 mb-0 py-2 small">{{ job.error_detail }}</div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function togglePdf(divId, url) {
+  const div = document.getElementById(divId);
+  if (div.style.display === 'none') {
+    div.style.display = 'block';
+    div.querySelector('iframe').src = url;
+  } else {
+    div.style.display = 'none';
+    div.querySelector('iframe').src = '';
+  }
+}
+</script>

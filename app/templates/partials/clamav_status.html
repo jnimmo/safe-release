@@ -1,0 +1,13 @@
+{% if available %}
+  <span class="text-light small">
+    {{ version_info.get('version', 'ClamAV') }}
+    {% if version_info.get('signature_date') %}
+      · sigs: {{ version_info.signature_date }}
+    {% endif %}
+    {% if stale %}
+      <span class="badge bg-warning text-dark ms-1">⚠ Signatures stale</span>
+    {% endif %}
+  </span>
+{% else %}
+  <span class="badge bg-danger">ClamAV unavailable</span>
+{% endif %}
