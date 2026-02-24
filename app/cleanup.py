@@ -11,7 +11,10 @@ CLEAN_JOB_TTL_HOURS = int(os.environ.get("CLEAN_JOB_TTL_HOURS", "1"))
 def wipe_temp_dir() -> None:
     """Called at startup — wipe all temp files from previous sessions."""
     if TEMP_BASE.exists():
-        shutil.rmtree(TEMP_BASE)
+        try:
+            shutil.rmtree(TEMP_BASE)
+        except PermissionError:
+            pass
     TEMP_BASE.mkdir(parents=True, exist_ok=True)
 
 
