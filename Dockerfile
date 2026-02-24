@@ -13,7 +13,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
 
-RUN useradd -m -u 1001 analyst
+RUN useradd -m -u 1001 analyst \
+    && mkdir /data \
+    && chown analyst /data
+
+ENV DATABASE_URL=sqlite:////data/safe_release.db
+
 USER analyst
 
 EXPOSE 8000
