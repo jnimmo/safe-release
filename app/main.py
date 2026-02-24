@@ -54,8 +54,15 @@ async def upload_eml(
     try:
         raw = await eml_file.read()
         tmp_eml = TEMP_BASE / "uploads" / eml_file.filename
-        tmp_eml.parent.mkdir(parents=True, exist_ok=True)
-        tmp_eml.write_bytes(raw)
+        try:
+            tmp_eml.parent.mkdir(parents=True, exist_ok=True)
+            tmp_eml.write_bytes(raw)
+        except PermissionError as exc:
+            return templates.TemplateResponse(
+                request,
+                "partials/job_card_error.html",
+                {"filename": eml_file.filename, "error": f"Server storage error: {exc}"},
+            )
 
         try:
             metadata = parse_eml(tmp_eml, TEMP_BASE / "staging")
