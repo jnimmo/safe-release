@@ -66,9 +66,8 @@ def encrypted_docx(tmp_path: Path, plain_docx: Path):
     out = tmp_path / "encrypted.docx"
     with open(plain_docx, "rb") as f:
         office_file = msoffcrypto.OfficeFile(f)
-        office_file.encrypt("test123")
         with open(out, "wb") as g:
-            office_file.write(g)
+            office_file.encrypt("test123", g)
     return out, "test123"
 
 
