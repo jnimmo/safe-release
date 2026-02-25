@@ -36,7 +36,7 @@
       <ul class="list-unstyled mt-2">
         {% for att in job.attachments %}
           <li class="mb-1">
-            📎 {{ att.filename }}
+            📎 {{ att.filename }}{% if att.get('original_scan', {}).get('is_pua_encrypted') %} 🔒{% endif %}
             {% if att.get('original_scan') %}
               <span class="badge {{ 'bg-success' if att.original_scan.clean else 'bg-warning text-dark' }} ms-1">
                 {% if att.original_scan.get('is_pua_encrypted') %}encrypted (expected)
