@@ -25,12 +25,13 @@ class ClamAVScanner:
         self._cd = pyclamd.ClamdNetworkSocket(host=host, port=port)
 
     def scan_file(self, path: Path) -> ScanResult:
-        """Scan a single file. Raises ClamAVUnavailableError on daemon error."""
-        raw = self._cd.scan_file(str(path))
+        """Scan a single file via stream. Raises ClamAVUnavailableError on daemon error."""
+        with open(path, "rb") as f:
+            raw = self._cd.scan_stream(f.read())
         if raw is None:
             return ScanResult(clean=True)
 
-        status, detail = raw[str(path)]
+        status, detail = raw["stream"]
 
         if status == "ERROR":
             raise ClamAVUnavailableError(f"ClamAV error scanning {path.name}: {detail}")
