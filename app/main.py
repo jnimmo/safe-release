@@ -129,6 +129,25 @@ async def retry_password(request: Request, job_id: str, password: str = Form(...
         db.close()
 
 
+@app.delete("/jobs/{job_id}")
+async def delete_job(request: Request, job_id: str):
+    db = get_db()
+    try:
+        job = db.get(Job, job_id)
+        if job:
+            job_dir = TEMP_BASE / job_id
+            if job_dir.exists():
+                shutil.rmtree(job_dir, ignore_errors=True)
+            db.delete(job)
+            db.commit()
+        jobs = db.query(Job).order_by(Job.created_at.desc()).all()
+        return templates.TemplateResponse(
+            request, "partials/job_list.html", {"jobs": jobs}
+        )
+    finally:
+        db.close()
+
+
 @app.get("/partials/jobs", response_class=HTMLResponse)
 async def jobs_partial(request: Request):
     db = get_db()

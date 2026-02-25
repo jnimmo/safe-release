@@ -7,7 +7,15 @@
         <span class="ms-2 text-muted small">{{ job.ticket_ref }}</span>
       {% endif %}
     </div>
-    <small class="text-muted">{{ job.created_at.strftime('%H:%M:%S') }}</small>
+    <div class="d-flex align-items-center gap-2">
+      <small class="text-muted">{{ job.created_at.strftime('%H:%M:%S') }}</small>
+      <button
+        hx-delete="/jobs/{{ job.id }}"
+        hx-target="#job-list"
+        hx-swap="outerHTML"
+        class="btn btn-sm btn-outline-danger py-0 px-1"
+        title="Remove job">✕</button>
+    </div>
   </div>
   <div class="card-body">
     {% if job.subject %}

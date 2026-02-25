@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -68,11 +69,15 @@ def extract_zip(encrypted_path: Path, password: str, output_dir: Path) -> list[P
 def decrypt_office(encrypted_path: Path, password: str, output_path: Path) -> None:
     """
     Decrypt a password-protected Office document (.docx/.xlsx/.pptx) using msoffcrypto-tool.
+    Unencrypted files are copied as-is.
     Raises WrongPasswordError on bad password, DecryptionError on other failures.
     """
     try:
         with open(encrypted_path, "rb") as enc_file:
             office_file = msoffcrypto.OfficeFile(enc_file)
+            if not office_file.is_encrypted():
+                shutil.copy2(encrypted_path, output_path)
+                return
             office_file.load_key(password=password)
             with open(output_path, "wb") as out_file:
                 office_file.decrypt(out_file)
