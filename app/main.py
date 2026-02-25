@@ -102,14 +102,17 @@ async def upload_eml(
         job.attachments = saved_attachments
         db.commit()
 
+        jobs = db.query(Job).order_by(Job.created_at.desc()).all()
+        return templates.TemplateResponse(
+            request, "partials/job_list.html", {"jobs": jobs}
+        )
+
     finally:
         db.close()
 
-    return RedirectResponse("/", status_code=303)
-
 
 @app.post("/jobs/{job_id}/retry")
-async def retry_password(job_id: str, password: str = Form(...)):
+async def retry_password(request: Request, job_id: str, password: str = Form(...)):
     db = get_db()
     try:
         job = db.get(Job, job_id)
@@ -118,9 +121,12 @@ async def retry_password(job_id: str, password: str = Form(...)):
             job.status = "queued"
             job.error_detail = None
             db.commit()
+        jobs = db.query(Job).order_by(Job.created_at.desc()).all()
+        return templates.TemplateResponse(
+            request, "partials/job_list.html", {"jobs": jobs}
+        )
     finally:
         db.close()
-    return RedirectResponse("/", status_code=303)
 
 
 @app.get("/partials/jobs", response_class=HTMLResponse)
