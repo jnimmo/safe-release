@@ -96,6 +96,9 @@ async def process_job(job: Job, db) -> None:
     wrong_password_files: list[str] = []
 
     for att in attachments:
+        if att.get("decryption_done"):
+            continue  # already processed in a previous attempt
+
         original_path = original_dir / att["filename"]
         if not original_path.exists():
             continue
@@ -115,10 +118,12 @@ async def process_job(job: Job, db) -> None:
                 import shutil
                 shutil.copy2(original_path, decrypted_path)
                 att["note"] = "Unsupported type — scanned in original form"
+            att["decryption_done"] = True
         except WrongPasswordError:
             wrong_password_files.append(att["filename"])
         except DecryptionError as exc:
             att["decrypted_scan"] = {"clean": False, "detail": str(exc)}
+            att["decryption_done"] = True  # error is final, don't retry
 
     if wrong_password_files:
         job.status = "awaiting_password"
